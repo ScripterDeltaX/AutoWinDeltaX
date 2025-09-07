@@ -1,0 +1,342 @@
+-- [⚡] GothbreachHelper FINAL V12.0
+-- Исправлена ошибка с появлением меню
+
+local Player = game:GetService("Players").LocalPlayer
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+-- Безопасное создание интерфейса
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+Player:WaitForChild("PlayerGui")
+
+-- Функция создания основного меню (определяем вначале)
+local function CreateMainMenu()
+    -- Создаем основное меню
+    local GothUI = Instance.new("ScreenGui")
+    GothUI.Name = "GothbreachHelper_MOBILE"
+    GothUI.Parent = game.CoreGui
+    GothUI.ResetOnSpawn = false
+    GothUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    -- Главное меню
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 400, 0, 250)
+    MainFrame.Position = UDim2.new(0.5, -200, 0.3, -125)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    MainFrame.BorderSizePixel = 3
+    MainFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
+    MainFrame.Visible = true
+    MainFrame.Parent = GothUI
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 12)
+    UICorner.Parent = MainFrame
+
+    -- Кнопка скрытия/показа для мобильных устройств
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Size = UDim2.new(0, 50, 0, 50)
+    ToggleButton.Position = UDim2.new(0, 10, 0, 10)
+    ToggleButton.Text = "☰"
+    ToggleButton.TextScaled = true
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleButton.Parent = GothUI
+    ToggleButton.ZIndex = 100
+
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 25)
+    ToggleCorner.Parent = ToggleButton
+
+    -- Радужный текст заголовка
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, 0, 0, 50)
+    Title.Position = UDim2.new(0, 0, 0, 10)
+    Title.Text = "⚡ AutoWin By DeepSeek ⚡"
+    Title.TextScaled = true
+    Title.Font = Enum.Font.SciFi
+    Title.BackgroundTransparency = 1
+    Title.Parent = MainFrame
+
+    -- Анимация радужного текста
+    coroutine.wrap(function()
+        while task.wait(0.1) do
+            if Title and Title.Parent then
+                local hue = tick() % 5 / 5
+                Title.TextColor3 = Color3.fromHSV(hue, 1, 1)
+            else
+                break
+            end
+        end
+    end)()
+
+    -- Кнопка авто-победы
+    local WinButton = Instance.new("TextButton")
+    WinButton.Size = UDim2.new(0, 300, 0, 60)
+    WinButton.Position = UDim2.new(0.5, -150, 0.5, -30)
+    WinButton.Text = "АКТИВИРОВАТЬ АВТО-ПОБЕДУ"
+    WinButton.TextScaled = true
+    WinButton.Font = Enum.Font.SciFi
+    WinButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    WinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    WinButton.Parent = MainFrame
+
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 8)
+    ButtonCorner.Parent = WinButton
+
+    -- РАСШИРЕННАЯ ФУНКЦИЯ АВТО-ПОБЕДЫ
+    WinButton.MouseButton1Click:Connect(function()
+        pcall(function()
+            -- Все возможные условия для победы
+            local function AdvancedAutoWin()
+                -- 1. Поиск всех RemoteEvent и RemoteFunction связанных с победой
+                local winKeywords = {"win", "victory", "complete", "finish", "success", "end", "reward", "claim", "collect"}
+                
+                for _, obj in pairs(game:GetDescendants()) do
+                    if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
+                        local nameLower = obj.Name:lower()
+                        for _, keyword in ipairs(winKeywords) do
+                            if nameLower:find(keyword) then
+                                if obj:IsA("RemoteEvent") then
+                                    pcall(function() obj:FireServer() end)
+                                else
+                                    pcall(function() obj:InvokeServer() end)
+                                end
+                            end
+                        end
+                    end
+                end
+                
+                -- 2. Поиск и активация всех кнопок и активируемых объектов
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("ClickDetector") or obj:IsA("TouchTransmitter") then
+                        if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+                            pcall(function()
+                                fireclickdetector(obj)
+                                firetouchinterest(Player.Character.HumanoidRootPart, obj.Parent, 0)
+                                firetouchinterest(Player.Character.HumanoidRootPart, obj.Parent, 1)
+                            end)
+                        end
+                    end
+                end
+                
+                -- 3. Завершение всех заданий и квестов
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj.Name:lower():find("quest") or obj.Name:lower():find("mission") or 
+                       obj.Name:lower():find("task") or obj.Name:lower():find("objective") then
+                        if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+                            Player.Character.HumanoidRootPart.CFrame = obj.CFrame
+                        end
+                    end
+                end
+                
+                -- 4. Установка победных значений
+                for _, obj in pairs(game:GetService("ReplicatedStorage"):GetDescendants()) do
+                    if obj:IsA("NumberValue") or obj:IsA("StringValue") or obj:IsA("BoolValue") then
+                        local nameLower = obj.Name:lower()
+                        if nameLower:find("win") or nameLower:find("complete") then
+                            pcall(function()
+                                if obj:IsA("NumberValue") then
+                                    obj.Value = 999999
+                                elseif obj:IsA("BoolValue") then
+                                    obj.Value = true
+                                elseif obj:IsA("StringValue") then
+                                    obj.Value = "completed"
+                                end
+                            end)
+                        end
+                    end
+                end
+                
+                -- 5. Прямое завершение игры через CoreGui
+                pcall(function()
+                    game:GetService("TeleportService"):TeleportToPlaceInstance(
+                        game.PlaceId,
+                        game.JobId,
+                        Player
+                    )
+                end)
+                
+                -- Уведомление о победе
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "⚡ ПОБЕДА АКТИВИРОВАНА",
+                    Text = "Все методы победы применены!",
+                    Duration = 5
+                })
+            end
+            
+            AdvancedAutoWin()
+        end)
+    end)
+
+    -- Функция скрытия/показа меню
+    local function ToggleMenu()
+        MainFrame.Visible = not MainFrame.Visible
+    end
+
+    -- Обработка клавиши P для ПК
+    UserInputService.InputBegan:Connect(function(input, processed)
+        if not processed and input.KeyCode == Enum.KeyCode.P then
+            ToggleMenu()
+        end
+    end)
+
+    -- Обработка нажатия для мобильных устройств
+    ToggleButton.MouseButton1Click:Connect(function()
+        ToggleMenu()
+    end)
+
+    -- Перетаскивание меню для мобильных устройств
+    local dragStart, startPos, dragging
+
+    MainFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            dragStart = input.Position
+            startPos = MainFrame.Position
+            dragging = true
+        end
+    end)
+
+    MainFrame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch and dragging then
+            local delta = input.Position - dragStart
+            MainFrame.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    MainFrame.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+
+    -- Автоматическое определение платформы
+    if UserInputService.TouchEnabled then
+        ToggleButton.Visible = true
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "⚡ МОБИЛЬНАЯ ВЕРСИЯ",
+            Text = "Используйте кнопку ☰ для управления",
+            Duration = 5
+        })
+    else
+        ToggleButton.Visible = false
+    end
+
+    -- Защита от ошибок
+    Player.CharacterAdded:Connect(function()
+        if not MainFrame.Parent then
+            GothUI:Destroy()
+        end
+    end)
+
+    print("GothbreachHelper MOBILE V12.0 успешно загружен!")
+end
+
+-- Создаем экран предупреждения (не на весь экран)
+local WarningUI = Instance.new("ScreenGui")
+WarningUI.Name = "GothbreachHelper_WARNING"
+WarningUI.Parent = game.CoreGui
+WarningUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local WarningFrame = Instance.new("Frame")
+WarningFrame.Size = UDim2.new(0, 500, 0, 300)
+WarningFrame.Position = UDim2.new(0.5, -250, 0.5, -150)
+WarningFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+WarningFrame.BorderSizePixel = 3
+WarningFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
+WarningFrame.ZIndex = 100
+WarningFrame.Parent = WarningUI
+
+local WarningCorner = Instance.new("UICorner")
+WarningCorner.CornerRadius = UDim.new(0, 15)
+WarningCorner.Parent = WarningFrame
+
+-- Анимированный радужный текст предупреждения
+local WarningText = Instance.new("TextLabel")
+WarningText.Size = UDim2.new(1, -40, 1, -40)
+WarningText.Position = UDim2.new(0, 20, 0, 20)
+WarningText.Text = "ВНИМАНИЕ\nСКРИПТ БЫЛ НАПИСАН НЕЙРОСЕТЬЮ DEEPSEEK\nИ МОЖЕТ РАБОТАТЬ СТРАННО"
+WarningText.TextScaled = true
+WarningText.Font = Enum.Font.SciFi
+WarningText.BackgroundTransparency = 1
+WarningText.TextColor3 = Color3.fromRGB(255, 0, 0)
+WarningText.ZIndex = 101
+WarningText.Parent = WarningFrame
+
+-- Анимация пульсации и вращения
+coroutine.wrap(function()
+    local countdown = 5
+    local scale = 1
+    local rotation = 0
+    
+    -- Анимация появления
+    WarningFrame.Size = UDim2.new(0, 10, 0, 10)
+    WarningFrame.Position = UDim2.new(0.5, -5, 0.5, -5)
+    
+    local tweenIn = TweenService:Create(
+        WarningFrame,
+        TweenInfo.new(0.7, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        {Size = UDim2.new(0, 500, 0, 300), Position = UDim2.new(0.5, -250, 0.5, -150)}
+    )
+    tweenIn:Play()
+    
+    tweenIn.Completed:Wait()
+    
+    -- Основная анимация
+    while countdown > 0 do
+        -- Пульсация
+        local pulseTween = TweenService:Create(
+            WarningFrame,
+            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+            {Size = UDim2.new(0, 520, 0, 310)}
+        )
+        pulseTween:Play()
+        pulseTween.Completed:Wait()
+        
+        local pulseTween2 = TweenService:Create(
+            WarningFrame,
+            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+            {Size = UDim2.new(0, 500, 0, 300)}
+        )
+        pulseTween2:Play()
+        pulseTween2.Completed:Wait()
+        
+        -- Смена цвета
+        local hue = tick() % 5 / 5
+        local colorTween = TweenService:Create(
+            WarningText,
+            TweenInfo.new(0.5, Enum.EasingStyle.Linear),
+            {TextColor3 = Color3.fromHSV(hue, 1, 1)}
+        )
+        colorTween:Play()
+        
+        -- Обновление текста с обратным отсчетом
+        WarningText.Text = "ВНИМАНИЕ\nСКРИПТ БЫЛ НАПИСАН НЕЙРОСЕТЬЮ DEEPSEEK\nИ МОЖЕТ РАБОТАТЬ СТРАННО\n\nЗапуск через: "..countdown.." сек"
+        
+        countdown = countdown - 1
+        task.wait(1)
+    end
+    
+    -- Анимация исчезновения
+    local tweenOut = TweenService:Create(
+        WarningFrame,
+        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+        {Size = UDim2.new(0, 10, 0, 10), Position = UDim2.new(0.5, -5, 0.5, -5)}
+    )
+    tweenOut:Play()
+    
+    tweenOut.Completed:Wait()
+    WarningUI:Destroy()
+    
+    -- Создаем основное меню после предупреждения
+    CreateMainMenu()
+end)()
